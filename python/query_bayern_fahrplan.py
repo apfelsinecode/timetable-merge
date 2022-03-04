@@ -1,4 +1,5 @@
 
+from __future__ import annotations
 from bs4 import BeautifulSoup, element
 import requests
 
@@ -12,7 +13,7 @@ stations = {
 }
 
 
-def departures(station_id: str = stations["Sanderring"]):
+def get_trs(station_id: str = stations["Sanderring"]):
     params = {
         "is_fs": "1",
         "is_xhr": "True",
@@ -22,8 +23,12 @@ def departures(station_id: str = stations["Sanderring"]):
     r = requests.get(departures_url, params=params)
     soup = BeautifulSoup(r.text, "html.parser")
     result = soup.find_all(attrs={"class": "results-tbody"})[0]
-    trs = [Departure(c) for c in result.children if (type(c) is element.Tag and c.name == "tr")]
-    return trs
+    return [c for c in result.children if (type(c) is element.Tag and c.name == "tr")]
+
+
+def departures(station_id: str = stations["Sanderring"]):
+    ds = [Departure(c) for c in get_trs(station_id)]
+    return ds
 
 
 class Departure:
@@ -34,7 +39,17 @@ class Departure:
         first_tr: element.Tag = trs[0]
         if first_tr:
             tds = [c for c in first_tr.children if c.name == "td"]
-            self.time = tds[0].text.strip()  # includes delay
+            td_time_delay: element.Tag
+            td_time_delay, td_line, td_destination, td_platform, *_ = tds
+
+            time_delay_spans = td_time_delay.find_all("span")
+            self.delay = None
+            if len(time_delay_spans) > 1:
+                s_delay = time_delay_spans[1]
+                self.delay = s_delay.text.strip()
+            s_time = time_delay_spans[0]
+            self.time = list(s_time.children)[0].text.strip()  # only first text child without nested delay span
+
             self.line = tds[1].text.strip()  # td[1] includes mot in class-name
             self.destination = tds[2].text.strip()
             self.platform = tds[3].text.strip()
@@ -43,7 +58,7 @@ class Departure:
             self.additional_info = [c.text for c in second_tr.children]
 
     def __str__(self) -> str:
-        return f"{self.time}\t{self.line}\t{self.destination}\t{self.platform}"
+        return f"{self.time} {self.delay if self.delay else ''} - {self.line} - {self.destination} - {self.platform}"
 
 
 if __name__ == '__main__':
