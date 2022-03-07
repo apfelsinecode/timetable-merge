@@ -1,6 +1,10 @@
 
 from __future__ import annotations
+
+from typing import List, Tuple
+
 from bs4 import BeautifulSoup, element
+import pandas as pd
 import requests
 import json
 
@@ -87,7 +91,7 @@ class Departure:
         return f"{self.time} {self.delay if self.delay else ''} - {self.line} - {self.destination} - {self.platform}"
 
 
-def stop_sequence(linkdata: dict, use_realtime: bool = True, full_journey: bool = True):
+def stop_sequence(linkdata: dict, use_realtime: bool = True, full_journey: bool = True) -> list[Stop]:
     params = linkdata.copy()
     if use_realtime:
         params["useRealtime"] = "1"
@@ -109,13 +113,45 @@ class Stop:
         self.as_string = tr.text.strip()
         tds = tr.find_all("td")
         td_station, td_arrival, td_departure, td_platform, *_ = tds
-        self.station = td_station.text.strip()
-        self.arrival = td_arrival.text.strip()
-        self.departure = td_departure.text.strip()
-        self.platform = td_platform.text.strip()
+        self.station: str = td_station.text.strip()
+        self.arrival: str = td_arrival.text.strip()
+        self.departure: str = td_departure.text.strip()
+        self.platform: str = td_platform.text.strip()
 
     def __str__(self):
         return self.as_string
+
+
+class StopSequence:
+
+    def __init__(self, line: str, destination: str, stops: list[Stop]):  # add id: str as parameter here
+        self.line = line
+        self.destination = destination
+        self.stops = stops
+
+    def station_departure_list(self) -> List[Tuple[str, str]]:
+        result = list()
+        for stop in self.stops:
+            result.append((stop.station, stop.departure))
+        # result.sort(key=lambda pair: pair[1])  # order by departure time
+        return result
+
+    def station_arrival_list(self) -> List[Tuple[str, str]]:
+        return [(stop.station, stop.arrival) for stop in self.stops]
+
+    def station_departure_or_arrival_list(self) -> List[Tuple[str, str]]:
+        """
+        if no departure time is available, departure time is taken
+        :return: list with tuples (station, time)
+        """
+        return [(stop.station, stop.departure or stop.arrival) for stop in self.stops]  # None or x -> x
+
+
+def stops_as_dataframe(stops: [Stop]):  # -> pd.DataFrame:
+    data = {}  # index is colum, value is list of row elements per column; column represent
+    for stop in stops:
+        pass
+    pass
 
 
 if __name__ == '__main__':
