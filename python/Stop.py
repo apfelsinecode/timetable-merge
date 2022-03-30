@@ -16,3 +16,6 @@ class Stop:
 
     def __str__(self):
         return self.as_string
+
+    def station_and_platform(self):
+        return f"{self.station} {self.platform}"

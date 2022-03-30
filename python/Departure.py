@@ -53,7 +53,13 @@ class Departure:
             second_tr = trs[1]
             self.additional_info = [c.text for c in second_tr.children]
 
-    def stop_sequence(self, use_realtime: bool = True, full_journey: bool = True):
+    def stop_sequence(self, use_realtime: bool = True, full_journey: bool = True) -> StopSequence:
+        """
+        request the stop sequence of this departure
+        :param use_realtime:
+        :param full_journey: show stops before current station
+        :return:
+        """
         return stop_sequence(linkdata=self.line_data,
                              line=self.line,
                              destination=self.destination,
