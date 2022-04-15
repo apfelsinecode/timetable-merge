@@ -3,6 +3,8 @@ from __future__ import annotations
 import collections
 import itertools
 import subprocess
+import networkx as nx
+from matplotlib import pyplot as plt
 
 from StopSequence import StopSequence
 import query_bayern_fahrplan as q
@@ -69,39 +71,19 @@ def sequence_to_pairs(sequence: collections.Iterable[str]) -> collections.Iterab
     return zip(sequence, itertools.islice(sequence, 1, None))
 
 
+def sequences_to_station_graph(sequences: collections.Iterable[StopSequence]) -> nx.DiGraph:
+    graph = nx.DiGraph()
+    for sequence in sequences:
+        nx.add_path(graph, [it.station for it in sequence])
+    return graph
+
+
 def main():
-    # sequences = query_sample_stop_sequences(filter_destinations=["Sanderau", "Rottenbauer"])
-    print(list(merge_sample_sequences()))
-    # seq1 = [
-    #     "Juliuspromenade",
-    #     "Dom",
-    #     "Rathaus",
-    #     "Neubaustraße",
-    #     "Sanderring",
-    #     "Eichendorfstraße",
-    #     "Königsberger Straße",
-    #     "Reuterstraße",
-    #     "Ostbahnhof",
-    #     "Berner Straße",
-    # ]
-    # seq2 = [
-    #     "Juliuspromenade",
-    #     "Mainfranken Theater",
-    #     "Berliner Ring",
-    #     "Erthalstraße",
-    #     "Hubland/Mensa",
-    #     "Neue Universität",
-    #     "Sanderring",
-    #     "Königsberger Straße",
-    #     "Reuterstraße",
-    #     "Klingenstraße",
-    #     "Berner Straße"
-    # ]
-    # seq3 = ["Busbahnhof", "Juliuspromenade"]
-    # elements = sequence_to_pairs(seq1) + sequence_to_pairs(seq2) + sequence_to_pairs(seq3)
-    # print(elements)
-    # _ordered = topological_sort(elements)
-    # print(_ordered)
+    sequences = query_sample_stop_sequences(filter_destinations=["Sanderau", "Rottenbauer"])
+    graph = sequences_to_station_graph(sequences)
+    nx.draw(graph)
+    plt.show()
+    # print(list(merge_sample_sequences()))
 
 
 if __name__ == '__main__':

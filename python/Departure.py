@@ -70,6 +70,9 @@ class Departure:
     def __str__(self) -> str:
         return f"{self.time} {self.delay if self.delay else ''} - {self.line} - {self.destination} - {self.platform}"
 
+    def __repr__(self):
+        return self.__str__()
+
 
 def stop_sequence(linkdata: dict,
                   line: str,
