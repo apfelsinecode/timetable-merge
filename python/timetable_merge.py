@@ -5,12 +5,13 @@ import itertools
 import subprocess
 import networkx as nx
 from matplotlib import pyplot as plt
+from typing import Callable
 
 from StopSequence import StopSequence
 import query_bayern_fahrplan as q
 
 
-def query_sample_stop_sequences(filter_destinations: list[str] = None):
+def query_sample_stop_sequences(filter_departures: Callable[[q.Departure], bool] = lambda x: True):
     """
     generator function that calls departures function with default arguments and yields the stop sequence
     of each departure
@@ -18,17 +19,16 @@ def query_sample_stop_sequences(filter_destinations: list[str] = None):
     """
     departures = q.departures()
     for departure in departures:
-        if filter_destinations:
-            if departure.destination in filter_destinations:
-                yield departure.stop_sequence()
-            else:
-                print("wrong destination:", departure.destination)
-        else:
+        if filter_departures(departure):
             yield departure.stop_sequence()
+        else:
+            print("wrong departure:", departure)
 
 
 def merge_sample_sequences():
-    sequences = query_sample_stop_sequences(filter_destinations=["Sanderau", "Rottenbauer"])
+    def _filter(d: q.Departure):
+        return d.destination in ["Sanderau" "Rottenbauer"]
+    sequences = query_sample_stop_sequences(filter_departures=_filter)
     return merge_stop_sequences(sequences)
 
 
@@ -43,10 +43,10 @@ def merge_stop_sequences(stop_sequences: collections.Iterable[StopSequence]) -> 
     # use station and platform because line 4 stops twice at Juliuspromenade but at different platforms
     half_ordering_pairs = (sequence_to_pairs(station_list) for station_list in station_lists)
     pairs_flattened = itertools.chain(*half_ordering_pairs)
-    return topological_sort(pairs_flattened)
+    return topological_sort_old(pairs_flattened)
 
 
-def topological_sort(pairs: collections.Iterable[(str, str)]) -> list[str]:
+def topological_sort_old(pairs: collections.Iterable[(str, str)]) -> list[str]:
     """
     calls command tsort to sort topologically
 
@@ -79,9 +79,11 @@ def sequences_to_station_graph(sequences: collections.Iterable[StopSequence]) ->
 
 
 def main():
-    sequences = query_sample_stop_sequences(filter_destinations=["Sanderau", "Rottenbauer"])
+    def _filter(d: q.Departure):
+        return d.destination in ["Sanderau" "Rottenbauer"]
+    sequences = query_sample_stop_sequences(filter_departures=_filter)
     graph = sequences_to_station_graph(sequences)
-    nx.draw(graph)
+    nx.draw_networkx(graph)
     plt.show()
     # print(list(merge_sample_sequences()))
 

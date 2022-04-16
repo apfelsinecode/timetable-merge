@@ -1,6 +1,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from bs4 import BeautifulSoup, element
 import requests
 
@@ -45,12 +47,24 @@ def get_departure_trs(station_id: str = stations["Sanderring"], date: str = None
 
 
 def departures(station_id: str = stations["Sanderring"], date: str = None, time: str = None):
+    """
+    :param station_id: see stations dict
+    :param date: format DD.MM.YYYY (%d.%m.%Y)
+    :param time: format HH:MM (%H:%M)
+    """
     ds = [Departure(c) for c in get_departure_trs(station_id, date, time)]
     return ds
 
 
+def departures_by_datetime(station_id: str = stations["Sanderring"], dt: datetime = None):
+    if dt:
+        return departures(station_id=station_id, date=dt.strftime("%d.%m.%Y"), time=dt.strftime("%H:%M"))
+    else:
+        return departures(station_id=station_id)
+
+
 def stops_as_dataframe(stops):  # -> pd.DataFrame:
-    data = {}  # index is colum, value is list of row elements per column; column represent
+    data = {}  # index is column, value is list of row elements per column; column represent
     for stop in stops:
         pass
     pass
