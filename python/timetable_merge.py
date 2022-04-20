@@ -67,6 +67,10 @@ def topological_sort_old(pairs: collections.Iterable[(str, str)]) -> list[str]:
     return [word.replace("***", " ") for word in ordered.splitlines()]
 
 
+def topological_sort_stations(graph: nx.DiGraph):
+    pass
+
+
 def sequence_to_pairs(sequence: collections.Iterable[str]) -> collections.Iterable[(str, str)]:
     return zip(sequence, itertools.islice(sequence, 1, None))
 
@@ -76,6 +80,19 @@ def sequences_to_station_graph(sequences: collections.Iterable[StopSequence]) ->
     for sequence in sequences:
         nx.add_path(graph, [it.station for it in sequence])
     return graph
+
+
+def sequence_to_acyclic_path(sequence: StopSequence) -> list[StopSequence]:
+    pass
+
+
+def sequences_to_acyclic_station_graph(sequences: collections.Iterable[StopSequence]) -> nx.DiGraph:
+    """
+    if a sequence contains
+    :param sequences:
+    :return:
+    """
+    graph = nx.DiGraph
 
 
 def main():
