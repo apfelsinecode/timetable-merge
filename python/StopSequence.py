@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 from collections import defaultdict
 from typing import List, Tuple
+import pandas as pd
 
 from Stop import Stop
 
@@ -56,6 +57,11 @@ class StopSequence:
                 recurrence_counter[stop.station] = 1
                 new_stop_list.append(copy.copy(stop))
         return StopSequence(line=self.line, destination=self.destination, stops=new_stop_list)
+
+    def as_acyclic_series(self) -> pd.Series:
+        acyclic_sequence = self.as_acyclic_stop_sequence()
+        time_and_station = acyclic_sequence.station_departure_or_arrival_list()
+        return pd.Series((it[1] for it in time_and_station), index=(it[0] for it in time_and_station))
 
     def __str__(self):
         return f"{self.line} {self.destination}: {str(self.stops)}"

@@ -67,10 +67,6 @@ def topological_sort_old(pairs: collections.Iterable[(str, str)]) -> list[str]:
     return [word.replace("***", " ") for word in ordered.splitlines()]
 
 
-def topological_sort_stations(graph: nx.DiGraph):
-    pass
-
-
 def sequence_to_pairs(sequence: collections.Iterable[str]) -> collections.Iterable[(str, str)]:
     return zip(sequence, itertools.islice(sequence, 1, None))
 
@@ -82,22 +78,24 @@ def sequences_to_station_graph(sequences: collections.Iterable[StopSequence]) ->
     return graph
 
 
-def sequence_to_acyclic_path(sequence: StopSequence) -> list[StopSequence]:
-    pass
-
-
 def sequences_to_acyclic_station_graph(sequences: collections.Iterable[StopSequence]) -> nx.DiGraph:
     """
     if a sequence contains
     :param sequences:
     :return:
     """
-    graph = nx.DiGraph
+    return sequences_to_station_graph((s.as_acyclic_stop_sequence() for s in sequences))
+
+
+def topologically_sorted_stations(sequences: collections.Iterable[StopSequence]) -> collections.Iterable[str]:
+    """use this as index for dataframes"""
+    graph = sequences_to_acyclic_station_graph(sequences)
+    return nx.topological_sort(graph)
 
 
 def main():
     def _filter(d: q.Departure):
-        return d.destination in ["Sanderau" "Rottenbauer"]
+        return d.destination in ["Sanderau", "Rottenbauer"]
     sequences = query_sample_stop_sequences(filter_departures=_filter)
     graph = sequences_to_station_graph(sequences)
     nx.draw_networkx(graph)
