@@ -18,7 +18,7 @@ def query_sample_stop_sequences(filter_departures: Callable[[q.Departure], bool]
     of each departure
     :return:
     """
-    departures = q.departures()
+    departures = q.only_departures()
     for departure in departures:
         if filter_departures(departure):
             yield departure.stop_sequence()

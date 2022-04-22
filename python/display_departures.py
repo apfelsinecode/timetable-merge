@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 
 def main():
-    departures = q.departures()
+    departures = q.only_departures()
     now = datetime.now()
     for departure in departures:
         time_diff = (departure.real_datetime or departure.datetime) - now
