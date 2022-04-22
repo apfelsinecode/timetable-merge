@@ -34,7 +34,7 @@ class Departure:
             self.line = td_line.text.strip()  # td[1] includes mot in class-name
             a: element.Tag = td_line.find_all("a")[0]
             line_data_json = a["data-stopseq_linkdata"]
-            self.line_data = json.loads(line_data_json)
+            self.line_data: dict = json.loads(line_data_json)
 
             # date and time from linedata
             # date: '20220327' YYYYMMDD

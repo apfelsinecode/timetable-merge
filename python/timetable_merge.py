@@ -4,6 +4,7 @@ import collections
 import itertools
 import subprocess
 import networkx as nx
+import pandas as pd
 from matplotlib import pyplot as plt
 from typing import Callable
 
@@ -91,6 +92,26 @@ def topologically_sorted_stations(sequences: collections.Iterable[StopSequence])
     """use this as index for dataframes"""
     graph = sequences_to_acyclic_station_graph(sequences)
     return nx.topological_sort(graph)
+
+
+# TODO topologically_sorted_series(series: Iterable[pd.Series]) like ..._sorted_stations
+
+
+def departures_to_data_frame(
+        departures: collections.Iterable[q.Departure],
+        departure_filter: Callable[[q.Departure], bool] = lambda x: True,
+        use_realtime: bool = False,
+        full_journey: bool = False
+        ) -> pd.DataFrame:
+    series_dict = dict()
+    sequences = list()  # will be used for topological sorting of data frame index
+    for departure in (d for d in departures if departure_filter(d)):
+        stop_sequence = departure.stop_sequence(use_realtime, full_journey)
+        sequences.append(stop_sequence)
+        unique_line_name = f"{departure.line} #{departure.line_data['tripCode']}"
+        series_dict[unique_line_name] = stop_sequence.as_acyclic_series()
+    index = list(topologically_sorted_stations(sequences))  # todo use topologically_sorted_series
+    return pd.DataFrame(series_dict, index=index)
 
 
 def main():
